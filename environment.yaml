@@ -1,0 +1,22 @@
+name: wind
+channels:
+  - pytorch
+  - gpytorch
+  - nvidia
+dependencies:
+  - python
+  - black
+  - mypy
+  - pytest
+  - numpy
+  - pytorch=1.8
+  - cudatoolkit=11.1
+  - gpytorch
+  - xarray
+  - cftime
+  - dask
+  - netcdf4
+  - matplotlib
+  - ipykernel
+  - tqdm
+  - pip
