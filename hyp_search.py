@@ -2,11 +2,10 @@ import itertools
 from dataclasses import dataclass
 from typing import List, Literal, Tuple
 
-import GPy
 import numpy as np
 import ray
 from GPy.core.mapping import Mapping
-from GPy.kern import RBF, Linear
+from GPy.kern import RBF, Linear, Poly, Matern32, Matern52
 from GPy.mappings.constant import Constant
 from GPy.mappings.kernel import Kernel
 from GPy.models import GPRegression
@@ -20,7 +19,7 @@ from ray_tqdm import ray_tqdm
 @dataclass
 class FieldConfig:
     name: str
-    kernel: Literal["rbf", "linear"]
+    kernel: Literal["rbf", "linear", "poly2", "matern32", "matern52"]
 
     def __str__(self) -> str:
         return f"{self.name}_{self.kernel}"
@@ -71,10 +70,12 @@ def main():
     test_wsgsmax = all_wsgsmax[test_time, y, x]
 
     configs = []
-    for mean in ["mean_gust", "constant"]:
-        for fields in [["psl", "uas"], input_field_names[:4], input_field_names]:
+    # Discard constant because it was no good
+    for mean in ["mean_gust"]:
+        # Using all the fields seemed to work better in most cases.
+        for fields in [input_field_names]:
             kernel_choices = itertools.combinations_with_replacement(
-                ["rbf", "linear"], r=len(fields)
+                ["rbf", "linear", "poly2", "matern32", "matern52"], r=len(fields)
             )
             for kernels in kernel_choices:
                 field_configs = [FieldConfig(f, k) for f, k in zip(fields, kernels)]
@@ -134,6 +135,12 @@ def create_kernel(field_config: FieldConfig) -> Kernel:
         return RBF(input_dim=1, active_dims=[d])
     elif field_config.kernel == "linear":
         return Linear(input_dim=1, active_dims=[d])
+    elif field_config.kernel == "poly2":
+        return Poly(input_dim=1, active_dims=[d], order=2)
+    elif field_config.kernel == "matern32":
+        return Matern32(input_dim=1, active_dims=[d])
+    elif field_config.kernel == "matern52":
+        return Matern52(input_dim=1, active_dims=[d])
     else:
         raise NotImplementedError
 
