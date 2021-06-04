@@ -1,5 +1,6 @@
 Experiments:
 - `single_point.ipynb`: the emulation experiments on a single point
+- `hyp_search.py`: hyperparameter search for GP model
 - `extreme_values_wind_gust.ipynb`: extreme value experiments
 
 Other files:
